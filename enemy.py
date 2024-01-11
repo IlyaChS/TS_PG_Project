@@ -3,13 +3,15 @@ import time
 from pathlib import Path
 
 
-class Hero(pygame.sprite.Sprite):
+class Enemy(pygame.sprite.Sprite):
 
-    def __init__(self, *group, cords):
+    def __init__(self, *group, cords, scr_width, pos):
         super().__init__(*group)
+        self.scrWidth = scr_width
+        self.pos = pos
         self.cords = cords
         self.frames = []
-        for frameFile in Path('./hero_frames').glob('*.png'):
+        for frameFile in Path('./enemy_frames').glob('*.png'):
             self.frames.append(pygame.image.load(frameFile).convert_alpha())
         self.image = self.frames[0]
         self.rect = self.image.get_rect()
@@ -18,6 +20,8 @@ class Hero(pygame.sprite.Sprite):
         self.frameTime = 0.15
         self.frameIndex = 0
         self.lastFrameTime = time.time()
+        self.rect.left = self.scrWidth
+        self.rect.bottom = self.cords[self.pos]
 
     def update(self):
         self.handleAnimation()
@@ -34,8 +38,6 @@ class Hero(pygame.sprite.Sprite):
             self.rect.center = x, y
 
     def handleMovement(self):
-        if self.rect.bottom > self.cords[self.curLine]:
-            self.rect.bottom -= 1
-        elif self.rect.bottom < self.cords[self.curLine]:
-            self.rect.bottom += 1
-
+        if self.rect.right == 0:
+            self.kill()
+        self.rect.left -= 1

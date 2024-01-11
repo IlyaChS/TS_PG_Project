@@ -1,6 +1,7 @@
 import os
 import sys
 import pygame
+import random
 
 pygame.init()
 width, height = pygame.display.Info().current_w, pygame.display.Info().current_h - 20
@@ -22,3 +23,12 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+
+def getRandPos():
+    s = set()
+    while len(s) != 2:
+        r = random.randint(0, 2)
+        s.add(r)
+    return list(s)
+
