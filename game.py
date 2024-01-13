@@ -7,6 +7,7 @@ from hero import Hero
 from back_ground import Background
 from barrier import Barrier
 from enemy import Enemy
+from currency import Currency
 
 
 class Game:
@@ -27,6 +28,7 @@ class Game:
         self.font_sprites = pygame.sprite.Group()
         self.barriers = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
+        self.currency = pygame.sprite.Group()
         self.back = Background()
         self.hero = Hero(cords=self.cords)
         self.poses = getRandPos()
@@ -35,10 +37,14 @@ class Game:
         self.object_width, self.object_height = self.hero.rect.width, self.hero.rect.height
         self.hero.rect.left = self.width // 2 - self.object_width // 2
         self.hero.rect.bottom = self.height - self.offset // 3
+        self.frequencyBar = 3
+        self.frequencyCur = 6
+        self.frequencyEnm = 12
         self.lastTimeSpawnBar = time.time()
         self.lastTimeSpawnEnm = time.time() + 1.5
-        self.frequencyBar = 3
-        self.frequencyEnm = 12
+        self.lastTimeSpawnCur = time.time() + 4.5
+        self.smallFreqCur = 2
+        self.smallLTSCur = time.time()
         # ///
         self.font_sprites.draw(self.screen)
         self.all_sprites.draw(self.screen)
@@ -66,14 +72,17 @@ class Game:
         self.all_sprites.draw(self.screen)
         self.barriers.draw(self.screen)
         self.enemies.draw(self.screen)
+        self.currency.draw(self.screen)
         pygame.display.flip()
 
     def update(self):
         self.all_sprites.update()
         self.barriers.update()
         self.enemies.update()
+        self.currency.update()
         self.handleSpawnBar()
         self.handleSpawnEnm()
+        self.handleSpawnCur()
 
     def handleSpawnBar(self):
         self.poses = getRandPos()
@@ -100,17 +109,30 @@ class Game:
                     cords=self.cords,
                     scr_width=self.width,
                     pos=self.poses[0]
-                        )
-            )
+                        ))
+
+    def handleSpawnCur(self):
+        posX = self.width
+        self.poses = getRandPos()
+        if time.time() - self.lastTimeSpawnCur >= self.frequencyCur:
+            for _ in range(3):
+                self.currency.add(
+                    Currency(
+                        cords=self.cords,
+                        pos_x=posX,
+                        pos_y=self.poses[0]
+                    ))
+                posX += 90
+            self.lastTimeSpawnCur = time.time()
 
     def drawing_lines(self):
-        pygame.draw.line(self.screen, 'white', (0, self.height),
+        pygame.draw.line(self.screen, 'grey', (0, self.height),
                          (self.width, self.height), width=10)
-        pygame.draw.line(self.screen, 'white', (0, self.height - self.offset // 3),
+        pygame.draw.line(self.screen, 'grey', (0, self.height - self.offset // 3),
                          (self.width, self.height - self.offset // 3), width=5)
-        pygame.draw.line(self.screen, 'white', (0, self.height - self.offset // 3 * 2),
+        pygame.draw.line(self.screen, 'grey', (0, self.height - self.offset // 3 * 2),
                          (self.width, self.height - self.offset // 3 * 2), width=5)
-        pygame.draw.line(self.screen, 'white', (0, self.height / 3),
+        pygame.draw.line(self.screen, 'grey', (0, self.height / 3),
                          (self.width, self.height / 3), width=10)
 
     def background(self):
@@ -128,6 +150,8 @@ class Game:
         if pygame.sprite.spritecollide(self.hero, self.enemies, False, pygame.sprite.collide_mask):
             print(2)
             sys.exit()
+        if pygame.sprite.spritecollide(self.hero, self.currency, True, pygame.sprite.collide_mask):
+            print(3)
 
 
 if __name__ == '__main__':
