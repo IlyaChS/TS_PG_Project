@@ -17,12 +17,14 @@ class Barrier(pygame.sprite.Sprite):
         self.lastSpawnTime = time.time()
         self.rect.left = self.scrWidth
         self.rect.bottom = self.cords[self.pos]
+        self.x = self.rect.left
 
-    def update(self):
-        self.handleMovement()
+    def update(self, dt):
+        self.handleMovement(dt)
 
-    def handleMovement(self):
+    def handleMovement(self, dt):
         if self.rect.right == 0:
             self.kill()
-        self.rect.left -= 1
+        self.x -= 300 * dt
+        self.rect.left = round(self.x)
 

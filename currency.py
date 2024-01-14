@@ -15,11 +15,13 @@ class Currency(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.left = self.posX
         self.rect.bottom = self.cords[self.posY]
+        self.x = self.rect.left
 
-    def update(self):
-        self.handleMovement()
+    def update(self, dt):
+        self.handleMovement(dt)
 
-    def handleMovement(self):
+    def handleMovement(self, dt):
         if self.rect.right == 0:
             self.kill()
-        self.rect.left -= 1
+        self.x -= 300 * dt
+        self.rect.left = round(self.x)

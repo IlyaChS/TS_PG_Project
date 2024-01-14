@@ -1,5 +1,6 @@
 import pygame
 
+
 class Shop:
     def __init__(self, screen):
         pygame.init()
@@ -11,9 +12,9 @@ class Shop:
         self.screen = screen
         pygame.display.set_caption('Магазин')
         self.font = pygame.font.Font(None, 36)
-        self.weapon = pygame.image.load('Sprite.png')
-        self.mask = pygame.image.load('mask.png')
-        self.background = pygame.image.load('shopy.png')
+        self.weapon = pygame.image.load('data/Sprite.png')
+        self.mask = pygame.image.load('data/mask.png')
+        self.background = pygame.image.load('data/shopy.png')
         self.read_statistics()
 
     def draw_button(self, color, hover_color, x, y, width, height, text, clicked, callback=None):

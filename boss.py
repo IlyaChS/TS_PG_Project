@@ -1,24 +1,25 @@
 import pygame
-import time
 from pathlib import Path
+import time
+from funcs import cursor
 
 
-class Hero(pygame.sprite.Sprite):
-
-    def __init__(self, *group, cords):
+class Boss(pygame.sprite.Sprite):
+    def __init__(self, *group, pos, level):
         super().__init__(*group)
-        self.cords = cords
+        self.level = level
+        self.pos = pos
         self.frames = []
-        for frameFile in Path('./hero_frames').glob('*.png'):
+        for frameFile in Path(*cursor.execute(f'SELECT boss FROM {self.level}').fetchone()).glob('*.png'):
             self.frames.append(pygame.image.load(frameFile).convert_alpha())
         self.image = self.frames[0]
         self.rect = self.image.get_rect()
-        self.y = self.rect.bottom
-        self.mask = pygame.mask.from_surface(self.image)
-        self.curLine = 1
+        self.rect.left = self.pos[0]
+        self.rect.bottom = self.pos[1]
         self.frameTime = 0.15
         self.frameIndex = 0
         self.lastFrameTime = time.time()
+        self.x = self.rect.left
 
     def update(self, dt):
         self.handleAnimation()
@@ -29,16 +30,13 @@ class Hero(pygame.sprite.Sprite):
             self.frameIndex += 1
             self.frameIndex %= len(self.frames)
             self.lastFrameTime = time.time()
-            x = self.rect.centerx
+            y = self.rect.centery
             self.image = self.frames[self.frameIndex]
             self.rect = self.image.get_rect()
-            self.rect.center = x, self.y
+            self.rect.center = self.x, y
 
     def handleMovement(self, dt):
-        if abs(self.y - self.cords[self.curLine]) < 3:
-            pass
-        elif self.y > self.cords[self.curLine]:
-            self.y -= 300 * dt
-        elif self.y < self.cords[self.curLine]:
-            self.y += 300 * dt
-        self.rect.bottom = round(self.y)
+        if self.rect.right == 0:
+            self.kill()
+        self.x -= 300 * dt
+        self.rect.left = round(self.x)

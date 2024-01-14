@@ -2,6 +2,7 @@ import os
 import sys
 import pygame
 import random
+import sqlite3
 
 pygame.init()
 width, height = pygame.display.Info().current_w, pygame.display.Info().current_h - 20
@@ -31,4 +32,23 @@ def getRandPos():
         r = random.randint(0, 2)
         s.add(r)
     return list(s)
+
+
+sound_data = {
+    'coin': pygame.mixer.Sound('sounds/coin.ogg')
+}
+
+con = sqlite3.connect('levels.sqlite')
+cursor = con.cursor()
+
+
+def download_stats():
+    with open('money X stats', 'r') as file:
+        info = file.readlines()
+    return int(info[0].split()[1]), int(info[1].split()[1]), int(info[2].split()[1])
+
+
+def upload_stats(money, power, defense):
+    with open('money X stats', 'w') as file:
+        file.write(f'money: {money}\npower: {power}\ndefense: {defense + 10}')
 

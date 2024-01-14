@@ -1,5 +1,7 @@
 import pygame
 import shop
+import game
+
 
 class Menu:
     def __init__(self, screen):
@@ -35,25 +37,24 @@ class Menu:
             self.draw_button(self.BLACK, self.YELLOW, 793, 615, 328, 114, "Магазин", self.open_shop)
             self.draw_button(self.BLACK, self.YELLOW, 793, 808, 328, 114, "Выход", pygame.quit)
 
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-
 
             pygame.display.flip()
 
         pygame.quit()
 
     def start_game(self):
-        print("Начать игру")
+        self.game = game.Game(self.screen)
+        self.game.start('level1')
 
     def open_shop(self):
         self.shop.start()
 
 
 pygame.init()
-screen = pygame.display.set_mode((1920, 1080))
+screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
 pygame.display.set_caption('Меню')
 
 menu = Menu(screen)
