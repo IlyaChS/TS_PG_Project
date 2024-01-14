@@ -68,15 +68,15 @@ class Enemy:
 class Fight:
     def __init__(self, screen):
         self.win = False
+        self.stats_applied = False
         self.hero = Hero()
-        self.enemy = Enemy()
         self.atacked_time_hero = None
         self.atacked_time_enemy = None
         self.enemy_attacked = False
         self.screen = screen
         self.font = pygame.font.Font(None, 36)
         self.hero_image = pygame.image.load('mainch_faight.png')
-        self.enemy_image = pygame.image.load('enemy2.png')
+        self.chek_stats = None
 
     def update(self):
         if self.hero.atacked and not self.atacked_time_hero and not self.enemy_attacked:
@@ -100,12 +100,22 @@ class Fight:
 
 
     def plus_stats(self):
-        self.hero.additional_defense += randint(1, 5)
-        self.hero.additional_power += randint(1, 5)
+        if self.chek_stats is None:
+            self.chek_stats = time.time()
+        if time.time() - self.chek_stats > 3:
+            self.chek_stats = None
+            self.back_to_game()
+        if not self.stats_applied:
+            self.hero.additional_defense += randint(1, 5)
+            self.hero.additional_power += randint(1, 5)
+            self.stats_applied = True
         text_surface = self.font.render(f'сила +{self.hero.additional_power}  защита +{self.hero.additional_defense}', True, WHITE)
         text_rect = text_surface.get_rect()
         text_rect.topleft = (300, 850)
         self.screen.blit(text_surface, text_rect)
+
+    def back_to_game(self):
+        self.running = False
 
     def draw(self):
         pygame.draw.rect(self.screen, (100, 100, 100), (256, 800, 1200, 150))
@@ -129,8 +139,10 @@ class Fight:
 
     def start(self):
         pygame.display.set_caption('Бой')
-        running = True
-        while running:
+        self.running = True
+        self.enemy = Enemy()
+        self.enemy_image = pygame.image.load('enemy2.png')
+        while self.running:
             self.screen.fill((25, 25, 25))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

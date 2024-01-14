@@ -1,55 +1,60 @@
 import pygame
+import shop
+
+class Menu:
+    def __init__(self, screen):
+        self.shop = shop.Shop(screen)
+        self.screen = screen
+        self.font = pygame.font.Font(None, 36)
+        self.WHITE = (255, 255, 255)
+        self.BLACK = (0, 0, 0)
+        self.YELLOW = (235, 205, 3)
+        self.image = pygame.image.load('menu_background.png')
+        self.image_rect = self.image.get_rect()
+
+    def draw_button(self, color, hover_color, x, y, width, height, text, callback=None):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        clicked = pygame.mouse.get_pressed()[0]
+        if x <= mouse_x <= x + width and y <= mouse_y <= y + height:
+            pygame.draw.rect(self.screen, hover_color, (x, y, width, height))
+            if clicked and callback:
+                callback()
+        else:
+            pygame.draw.rect(self.screen, color, (x, y, width, height))
+
+        text_surface = self.font.render(text, True, self.WHITE)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (x + width // 2, y + height // 2)
+        self.screen.blit(text_surface, text_rect)
+
+    def start(self):
+        running = True
+        while running:
+            self.screen.blit(self.image, (0, 0))
+            self.draw_button(self.BLACK, self.YELLOW, 793, 422, 328, 114, "Играть", self.start_game)
+            self.draw_button(self.BLACK, self.YELLOW, 793, 615, 328, 114, "Магазин", self.open_shop)
+            self.draw_button(self.BLACK, self.YELLOW, 793, 808, 328, 114, "Выход", pygame.quit)
+
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+
+            pygame.display.flip()
+
+        pygame.quit()
+
+    def start_game(self):
+        print("Начать игру")
+
+    def open_shop(self):
+        self.shop.start()
+
 
 pygame.init()
-
-
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-LIGHT_BLUE = (135, 206, 250)
-
-WIDTH, HEIGHT = 1920, 1080
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((1920, 1080))
 pygame.display.set_caption('Меню')
 
-
-# Функция для отрисовки кнопки
-def draw_button(color, hover_color, x, y, width, height, text):
-    mouse_x, mouse_y = pygame.mouse.get_pos()
-    clicked = pygame.mouse.get_pressed()[0]
-    if x <= mouse_x <= x + width and y <= mouse_y <= y + height:
-        pygame.draw.rect(screen, hover_color, (x, y, width, height))
-        if clicked:
-            print("Кнопка была нажата!")
-    else:
-        pygame.draw.rect(screen, color, (x, y, width, height))
-
-    font = pygame.font.Font(None, 36)
-    text_surface = font.render(text, True, WHITE)
-    text_rect = text_surface.get_rect()
-    text_rect.center = (x + width // 2, y + height // 2)
-    screen.blit(text_surface, text_rect)
-
-
-image = pygame.image.load('Trash city.png')
-image_rect = image.get_rect()
-
-running = True
-while running:
-    screen.fill((106, 190, 48))
-
-    # Создание кнопки
-    start_button_x, start_button_y = 860, 440
-    shop_button_x, shop_button_y = 860, 590
-    button_width, button_height = 200, 100
-    draw_button(GREEN, LIGHT_BLUE, start_button_x, start_button_y, button_width, button_height, "Играть")
-    draw_button(GREEN, LIGHT_BLUE, shop_button_x, shop_button_y, button_width, button_height, "Магазин")
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    screen.blit(image, (760, 200))
-
-    pygame.display.flip()
-
-pygame.quit()
+menu = Menu(screen)
+menu.start()
