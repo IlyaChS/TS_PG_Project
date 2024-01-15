@@ -208,8 +208,9 @@ class Game:
             money, power, defense = download_stats()
             money += 1
             upload_stats(money, power, defense)
-        if pygame.sprite.spritecollide(self.hero, self.bossGroup, False, pygame.sprite.collide_rect):
-            self.start_boss = False
+        if pygame.sprite.spritecollide(self.hero, self.bossGroup, True, pygame.sprite.collide_rect):
+            self.fight_boss = fight.Fight(self.screen, self.additional_power, self.additional_defense, boss=True)
+            self.fight_boss.start()
 
     def boss(self):
         self.handleSpawnBoss()

@@ -52,21 +52,31 @@ class Hero:
 
 
 class Enemy:
-    def __init__(self):
-        self.hp = randint(10, 100)
-        self.max_hp = self.hp
-        self.damage = randint(10, 20)
+    def __init__(self,  boss):
+        self.boss = boss
+        if self.boss:
+            self.hp = 250
+            self.damage = 35
+            self.max_hp = self.hp
+        else:
+            self.hp = randint(10, 100)
+            self.max_hp = self.hp
+            self.damage = randint(10, 20)
 
     def hp_bar(self, screen):
-        pygame.draw.rect(screen, (255, 0, 0), (1160, 130, self.hp * 2, 20))
+        if self.boss:
+            pygame.draw.rect(screen, (255, 0, 0), (1160, 130, self.hp, 20))
+        else:
+            pygame.draw.rect(screen, (255, 0, 0), (1160, 130, self.hp * 2, 20))
 
     def atack(self, hero):
         hero.hp -= max(1, self.damage - (hero.base_defense + hero.additional_defense))
 
 
 class Fight:
-    def __init__(self, screen, power, defense):
+    def __init__(self, screen, power, defense, boss=None):
         self.win = False
+        self.boss = boss
         self.stats_applied = False
         self.hero = Hero(power, defense)
         self.atacked_time_hero = None
@@ -146,7 +156,7 @@ class Fight:
     def start(self):
         pygame.display.set_caption('Бой')
         self.running = True
-        self.enemy = Enemy()
+        self.enemy = Enemy(self.boss)
         self.enemy_image = pygame.image.load('fight_imgs/enemy2.png')
         while self.running:
             self.screen.fill((25, 25, 25))
