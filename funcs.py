@@ -52,3 +52,13 @@ def upload_stats(money, power, defense):
     with open('money X stats', 'w') as file:
         file.write(f'money: {money}\npower: {power}\ndefense: {defense + 10}')
 
+
+def read_boss_file():
+    with open('check_bosses.txt') as file:
+        res = file.readlines()
+    return int(res[0].split()[1]), int(res[1].split()[1])
+
+
+def write_boss_file(rot, rat):
+    with open('check_bosses.txt', 'w') as file:
+        file.write(f'rot: {rot}\nrat: {rat}')

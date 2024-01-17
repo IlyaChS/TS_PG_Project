@@ -23,5 +23,5 @@ class Currency(pygame.sprite.Sprite):
     def handleMovement(self, dt):
         if self.rect.right == 0:
             self.kill()
-        self.x -= 300 * dt
+        self.x -= 400 * dt
         self.rect.left = round(self.x)

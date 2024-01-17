@@ -72,11 +72,11 @@ class Shop:
         self.draw_button(self.BLUE, self.LIGHT_BLUE if rich else (255, 0, 0), power_button_x, power_button_y, button_width, button_height, "10",
                          self.clicked, self.buy_power if rich else None)
         self.draw_button(self.BLUE, self.LIGHT_BLUE if rich else (255, 0, 0), shield_button_x, shield_button_y, button_width, button_height,
-                         "10", self.clicked, self.buy_defense  if rich else None)
+                         "10", self.clicked, self.buy_defense if rich else None)
         self.screen.blit(self.weapon, (200, 200))
         self.screen.blit(self.mask, (1220, 270))
 
-        self.draw_button(self.BLUE, self.LIGHT_BLUE, 200, 115, 70, 70, "<", self.clicked, self.return_to_menu)
+        self.draw_button(self.BLUE, self.LIGHT_BLUE, 20, 20, 50, 50, "<", self.clicked, self.return_to_menu)
 
     def start(self):
         self.running = True
@@ -96,5 +96,5 @@ class Shop:
 
 
 if __name__ == '__main__':
-    shop = Shop()
+    shop = Shop(pygame.display.set_mode((1920, 1080)))
     shop.start()

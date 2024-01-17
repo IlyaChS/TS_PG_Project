@@ -10,7 +10,7 @@ class Boss(pygame.sprite.Sprite):
         self.level = level
         self.pos = pos
         self.frames = []
-        for frameFile in Path(*cursor.execute(f'SELECT boss FROM {self.level}').fetchone()).glob('*.png'):
+        for frameFile in Path(f'sprites/{cursor.execute(f"SELECT boss FROM {self.level}").fetchone()[0]}').glob("*.png"):
             self.frames.append(pygame.image.load(frameFile).convert_alpha())
         self.image = self.frames[0]
         self.rect = self.image.get_rect()
@@ -38,5 +38,5 @@ class Boss(pygame.sprite.Sprite):
     def handleMovement(self, dt):
         if self.rect.right == 0:
             self.kill()
-        self.x -= 300 * dt
+        self.x -= 400 * dt
         self.rect.left = round(self.x)

@@ -1,6 +1,6 @@
 import pygame
 import shop
-import game
+import choose_level
 
 
 class Menu:
@@ -30,24 +30,27 @@ class Menu:
         self.screen.blit(text_surface, text_rect)
 
     def start(self):
-        running = True
-        while running:
+        self.running = True
+        while self.running:
             self.screen.blit(self.image, (0, 0))
             self.draw_button(self.BLACK, self.YELLOW, 793, 422, 328, 114, "Играть", self.start_game)
             self.draw_button(self.BLACK, self.YELLOW, 793, 615, 328, 114, "Магазин", self.open_shop)
-            self.draw_button(self.BLACK, self.YELLOW, 793, 808, 328, 114, "Выход", pygame.quit)
+            self.draw_button(self.BLACK, self.YELLOW, 793, 808, 328, 114, "Выход", self.exit)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    self.running = False
 
             pygame.display.flip()
 
         pygame.quit()
 
+    def exit(self):
+        self.running = False
+
     def start_game(self):
-        self.game = game.Game(self.screen)
-        self.game.start('level1')
+        self.levels = choose_level.Levels(self.screen)
+        self.levels.start()
 
     def open_shop(self):
         self.shop.start()

@@ -20,8 +20,8 @@ class Background(pygame.sprite.Sprite):
         screen.blit(self.image2, self.rect2)
 
     def update(self, dt):
-        self.x1 -= 100 * dt
-        self.x2 -= 100 * dt
+        self.x1 -= 200 * dt
+        self.x2 -= 200 * dt
         if self.rect1.right <= 0:
             self.rect1.left = self.rect2.right - 2
             self.x1 = self.rect1.left

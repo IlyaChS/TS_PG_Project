@@ -9,7 +9,7 @@ class Hero(pygame.sprite.Sprite):
         super().__init__(*group)
         self.cords = cords
         self.frames = []
-        for frameFile in Path('./hero_frames').glob('*.png'):
+        for frameFile in Path('sprites/hero_frames').glob('*.png'):
             self.frames.append(pygame.image.load(frameFile).convert_alpha())
         self.image = self.frames[0]
         self.rect = self.image.get_rect()
@@ -38,7 +38,7 @@ class Hero(pygame.sprite.Sprite):
         if abs(self.y - self.cords[self.curLine]) < 3:
             pass
         elif self.y > self.cords[self.curLine]:
-            self.y -= 300 * dt
+            self.y -= 400 * dt
         elif self.y < self.cords[self.curLine]:
-            self.y += 300 * dt
+            self.y += 400 * dt
         self.rect.bottom = round(self.y)

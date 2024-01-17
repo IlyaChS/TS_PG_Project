@@ -25,6 +25,7 @@ class Game:
         self.start_boss = False
         self.font = pygame.font.Font(None, 50)
         self.coinSound = sound_data['coin']
+        pygame.mixer.Sound.set_volume(self.coinSound, 0.3)
         # self.barrierSound = sound_data['barrier']
         # /// Параметры спрайтов
         self.cords = {
@@ -85,7 +86,7 @@ class Game:
             self.update()
             self.draw()
             self.collision()
-            self.clock.tick(144)
+            self.dt = self.clock.tick(300) / 1000
 
     def draw(self):
         self.screen.fill('black')
@@ -191,15 +192,16 @@ class Game:
             # self.barrierSound.play()
         if pygame.sprite.spritecollide(self.hero, self.enemies, True, pygame.sprite.collide_mask):
             self.moving = False
-            self.lastTimeSpawnBar = None
-            self.lastTimeSpawnEnm = None
-            self.lastTimeSpawnCur = None
-            self.fight = fight.Fight(self.screen, self.additional_power, self.additional_defense)
+            delayBar = time.time() - self.lastTimeSpawnBar
+            delayEnm = time.time() - self.lastTimeSpawnEnm
+            delayCur = time.time() - self.lastTimeSpawnCur
+            self.fight = fight.Fight(self.screen, self.level, self.additional_power, self.additional_defense)
             self.fight.start()
-            self.moving = self.fight.back_to_game()
-            self.lastTimeSpawnBar = time.time() - 2.5
-            self.lastTimeSpawnEnm = time.time() - 1
-            self.lastTimeSpawnCur = time.time() + 2
+            self.moving = self.fight.result()
+            self.lastTimeSpawnBar = time.time() - delayBar
+            self.lastTimeSpawnEnm = time.time() - delayEnm
+            self.lastTimeSpawnCur = time.time() - delayCur
+            self.dt = self.clock.tick(300) / 1000
             self.additional_power, self.additional_defense = \
                 (self.fight.add_stats(self.additional_power, self.additional_defense))
             print(self.additional_power, self.additional_defense)
@@ -209,8 +211,9 @@ class Game:
             money += 1
             upload_stats(money, power, defense)
         if pygame.sprite.spritecollide(self.hero, self.bossGroup, True, pygame.sprite.collide_rect):
-            self.fight_boss = fight.Fight(self.screen, self.additional_power, self.additional_defense, boss=True)
+            self.fight_boss = fight.Fight(self.screen, self.level, self.additional_power, self.additional_defense, boss=True)
             self.fight_boss.start()
+            self.running = self.fight_boss.result()
 
     def boss(self):
         self.handleSpawnBoss()
@@ -231,4 +234,4 @@ class Game:
 
 if __name__ == '__main__':
     game = Game(pygame.display.set_mode((1920, 1080)))
-    game.start('level1')
+    game.start('level2')
