@@ -1,13 +1,14 @@
 import time
 import fight
 import pygame
-from funcs import getRandPos, sound_data, download_stats, upload_stats
+from funcs import getRandPos, sound_data, download_stats, upload_stats, play_sound, cursor
 from hero import Hero
 from back_ground import Background
 from barrier import Barrier
 from enemy import Enemy
 from currency import Currency
 from boss import Boss
+from lose import Lose
 
 pygame.init()
 
@@ -24,8 +25,6 @@ class Game:
         self.moving = True
         self.start_boss = False
         self.font = pygame.font.Font(None, 50)
-        self.coinSound = sound_data['coin']
-        pygame.mixer.Sound.set_volume(self.coinSound, 0.3)
         # self.barrierSound = sound_data['barrier']
         # /// Параметры спрайтов
         self.cords = {
@@ -60,6 +59,9 @@ class Game:
         self.additional_defense = 0
 
     def start(self, level):
+        pygame.mixer.music.load(f'sounds/{cursor.execute(f"SELECT music FROM {level}").fetchone()[0]}')
+        pygame.mixer.music.set_volume(0.1)
+        pygame.mixer.music.play(-1)
         self.running = True
         self.enemy_amount = 0
         self.level = level
@@ -70,6 +72,7 @@ class Game:
                 self.enemy_amount = 0
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    pygame.mixer.music.stop()
                     self.running = False
                 if not self.start_boss:
                     if event.type == pygame.KEYDOWN:
@@ -88,7 +91,7 @@ class Game:
             self.collision()
             self.dt = self.clock.tick(300) / 1000
 
-    def draw(self):
+    def draw(self, update=True):
         self.screen.fill('black')
         self.back.draw(self.screen)
         if self.moving:
@@ -98,10 +101,10 @@ class Game:
             self.enemies.draw(self.screen)
             self.currency.draw(self.screen)
             self.draw_money(self.width - 100, 50)
-            pygame.display.flip()
         if self.start_boss:
             self.all_sprites.draw(self.screen)
             self.bossGroup.draw(self.screen)
+        if update:
             pygame.display.flip()
 
     def update(self):
@@ -185,32 +188,52 @@ class Game:
         pygame.draw.line(self.screen, 'grey', (0, self.height / 3),
                          (self.width, self.height / 3), width=10)
 
+    def fadeIn(self, width, height):
+        fade = pygame.Surface((width, height))
+        fade.fill((0, 0, 0))
+        for alpha in range(0, 300):
+            fade.set_alpha(alpha)
+            self.draw(False)
+            self.screen.blit(fade, (0, 0))
+            pygame.display.flip()
+            pygame.time.delay(1)
+
     def collision(self):
         if pygame.sprite.spritecollide(self.hero, self.barriers, False, pygame.sprite.collide_mask):
-            print(1)
-            self.running = False
-            # self.barrierSound.play()
-        if pygame.sprite.spritecollide(self.hero, self.enemies, True, pygame.sprite.collide_mask):
+            pygame.mixer.music.stop()
+            play_sound(sound_data['barrier'], 0.3)
             self.moving = False
+            self.fadeIn(self.width, self.height)
+            lose = Lose(self.screen, self.level)
+            lose.start()
+            self.running = False
+        if pygame.sprite.spritecollide(self.hero, self.enemies, True, pygame.sprite.collide_mask):
+            pygame.mixer.music.pause()
+            play_sound(sound_data['enemy'], 0.3)
             delayBar = time.time() - self.lastTimeSpawnBar
             delayEnm = time.time() - self.lastTimeSpawnEnm
             delayCur = time.time() - self.lastTimeSpawnCur
             self.fight = fight.Fight(self.screen, self.level, self.additional_power, self.additional_defense)
+            self.fadeIn(self.width, self.height)
             self.fight.start()
-            self.moving = self.fight.result()
+            if not self.fight.result():
+                self.running = False
+                return
+            pygame.mixer.music.unpause()
             self.lastTimeSpawnBar = time.time() - delayBar
             self.lastTimeSpawnEnm = time.time() - delayEnm
             self.lastTimeSpawnCur = time.time() - delayCur
             self.dt = self.clock.tick(300) / 1000
             self.additional_power, self.additional_defense = \
                 (self.fight.add_stats(self.additional_power, self.additional_defense))
-            print(self.additional_power, self.additional_defense)
         if pygame.sprite.spritecollide(self.hero, self.currency, True, pygame.sprite.collide_mask):
-            self.coinSound.play()
+            play_sound(sound_data['coin'], 0.3)
             money, power, defense = download_stats()
             money += 1
             upload_stats(money, power, defense)
         if pygame.sprite.spritecollide(self.hero, self.bossGroup, True, pygame.sprite.collide_rect):
+            pygame.mixer.music.stop()
+            play_sound(sound_data['boss'], 0.3)
             self.fight_boss = fight.Fight(self.screen, self.level, self.additional_power, self.additional_defense, boss=True)
             self.fight_boss.start()
             self.running = self.fight_boss.result()

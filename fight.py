@@ -2,7 +2,9 @@ import pygame
 from random import randint
 import time
 from pathlib import Path
-from funcs import cursor, read_boss_file, write_boss_file
+from funcs import cursor, read_boss_file, write_boss_file, sound_data, play_sound
+import victory
+import lose
 
 
 WHITE = (255, 255, 255)
@@ -112,7 +114,8 @@ class Enemy:
         else:
             self.hp = randint(10, 100)
             self.max_hp = self.hp
-            self.damage = randint(10, 20)
+            # self.damage = randint(10, 20)
+            self.damage = 100
         self.frames = []
         for frameFile in Path(f'./sprites/{cursor.execute(f"SELECT in_fight FROM {self.level}").fetchone()[0]}').glob('*.png'):
             self.frames.append(pygame.image.load(frameFile).convert_alpha())
@@ -131,6 +134,7 @@ class Enemy:
 
     def atack(self, hero):
         hero.hp -= max(1, self.damage - (hero.base_defense + hero.additional_defense))
+        hero.hp = max(hero.hp, 0)
 
     def change_animation_status(self, name, once=False):
         self.once = once
@@ -166,7 +170,9 @@ class Enemy:
 class Fight:
     def __init__(self, screen, level, power, defense, boss=None):
         self.level = level
+        self.exit = False
         self.win = False
+        self.hero_lost = False
         self.boss = boss
         self.stats_applied = False
         self.hero = Hero(power, defense)
@@ -186,10 +192,13 @@ class Fight:
             self.enemy.change_animation_status(cursor.execute(f'SELECT in_fight FROM {self.level}').fetchone()[0])
 
     def update(self):
+        if self.hero_lost:
+            return
         self.hero.Animation()
         self.enemy.Animation()
         if self.hero.atacked and not self.atacked_time_hero and not self.enemy_attacked:
             if not self.hero.en_turn:
+                play_sound(sound_data['hero_strike'], 0.5)
                 self.hero.change_animation_status('hero_strike', True)
             self.atacked_time_hero = time.time()
             self.enemy_attacked = True
@@ -197,6 +206,7 @@ class Fight:
         if self.atacked_time_hero:
             if time.time() - self.atacked_time_hero >= 2:
                 if self.enemy.hp > 0:
+                    play_sound(sound_data['enemy_strike'], 0.3)
                     if self.boss:
                         self.enemy.change_animation_status(cursor.execute(f'SELECT b_strike FROM {self.level}').fetchone()[0],
                                                        True)
@@ -205,6 +215,11 @@ class Fight:
                             cursor.execute(f'SELECT strike FROM {self.level}').fetchone()[0],
                             True)
                     self.enemy.atack(self.hero)
+
+                    if self.hero.hp <= 0:
+                        self.lost()
+                        self.hero_lost = True
+                        return
                     self.atacked_time_hero = False
                     self.atacked_time_enemy = time.time()
                 else:
@@ -216,12 +231,16 @@ class Fight:
                 self.atacked_time_enemy = None
                 self.enemy_attacked = False
 
+    def lost(self):
+        self.result()
+        self.exit = True
+
     def plus_stats(self):
         if self.chek_stats is None:
             self.chek_stats = time.time()
         if time.time() - self.chek_stats > 3:
             self.chek_stats = None
-            self.result()
+            self.exit = True
         if not self.stats_applied:
             self.additional_defense += randint(1, 5)
             self.additional_power += randint(1, 5)
@@ -237,21 +256,41 @@ class Fight:
         return power, defense
 
     def result(self):
-        self.running = False
-        if self.boss and self.win:
-            if self.level == 'level1':
-                rot, rat = read_boss_file()
-                rot = 1
-                write_boss_file(rot, rat)
-            elif self.level == 'level2':
-                rot, rat = read_boss_file()
-                rat = 1
-                write_boss_file(rot, rat)
-            return False
-        elif self.boss and not self.win:
+        self.exit = True
+        if self.boss:
             return False
         else:
             return self.win
+
+    def end(self):
+        if self.level == 'level1':
+            if self.boss and self.win:
+                rot, rat = read_boss_file()
+                rot = 1
+                write_boss_file(rot, rat)
+                win = victory.Victory(self.screen, self.level)
+                win.start()
+            elif self.boss and not self.win:
+                lost = lose.Lose(self.screen, self.level)
+                lost.start()
+            else:
+                if not self.win:
+                    lost = lose.Lose(self.screen, self.level)
+                    lost.start()
+        elif self.level == 'level2':
+            if self.boss and self.win:
+                rot, rat = read_boss_file()
+                rat = 1
+                write_boss_file(rot, rat)
+                win = victory.Victory(self.screen, self.level)
+                win.start()
+            elif self.boss and not self.win:
+                lost = lose.Lose(self.screen, self.level)
+                lost.start()
+            else:
+                if not self.win:
+                    lost = lose.Lose(self.screen, self.level)
+                    lost.start()
 
     def draw(self):
         self.screen.blit(self.hero.image, (256, 200))
@@ -273,7 +312,28 @@ class Fight:
         text_rect.topleft = (x, y)
         self.screen.blit(text_surface, text_rect)
 
+    def fadeIn(self, width, height):
+        fade = pygame.Surface((width, height))
+        fade.fill((0, 0, 0))
+        for alpha in range(0, 300):
+            fade.set_alpha(alpha)
+            self.draw()
+            self.screen.blit(fade, (0, 0))
+            pygame.display.update()
+            pygame.time.delay(1)
+
+    def fadeOut(self, width, height):
+        fade = pygame.Surface((width, height))
+        fade.fill((0, 0, 0))
+        for alpha in range(300, 0, -1):
+            fade.set_alpha(alpha)
+            self.draw()
+            self.screen.blit(fade, (0, 0))
+            pygame.display.update()
+            pygame.time.delay(1)
+
     def start(self):
+        self.fadeOut(self.screen.get_width(), self.screen.get_height())
         pygame.display.set_caption('Бой')
         self.running = True
         while self.running:
@@ -281,10 +341,14 @@ class Fight:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+
             self.update()
             self.draw()
-
+            if self.exit:
+                self.fadeIn(self.screen.get_width(), self.screen.get_height())
+                self.running = False
             pygame.display.flip()
+        self.end()
 
 
 if __name__ == '__main__':

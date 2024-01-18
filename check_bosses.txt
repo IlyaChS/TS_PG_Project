@@ -1,2 +1,2 @@
-rot: 1
-rat: 1
+rot: 0
+rat: 0

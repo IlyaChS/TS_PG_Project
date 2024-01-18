@@ -1,5 +1,6 @@
 import pygame
 import game
+from funcs import sound_data, play_sound
 
 
 class Levels:
@@ -30,6 +31,7 @@ class Levels:
         if x <= mouse_x <= x + width and y <= mouse_y <= y + height:
             pygame.draw.rect(self.screen, hover_color, (x, y, width, height))
             if clicked and callback:
+                play_sound(sound_data['button'], 0.5)
                 callback()
 
         else:

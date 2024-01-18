@@ -35,8 +35,23 @@ def getRandPos():
 
 
 sound_data = {
-    'coin': pygame.mixer.Sound('sounds/coin.ogg')
+    'coin': pygame.mixer.Sound('sounds/coin.ogg'),
+    'barrier': pygame.mixer.Sound('sounds/Во-время-удара-об-мусорку_1.ogg'),
+    'enemy_strike': pygame.mixer.Sound('sounds/Звук-удара-врага_1.ogg'),
+    'hero_strike': pygame.mixer.Sound('sounds/Во-время-удара-героя.ogg'),
+    'victory': pygame.mixer.Sound('sounds/Во-время-победы_обрез-конец_.ogg'),
+    'lose': pygame.mixer.Sound('sounds/lose.ogg'),
+    'enemy': pygame.mixer.Sound('sounds/enemy.ogg'),
+    'button': pygame.mixer.Sound('sounds/button.ogg'),
+    'boss': pygame.mixer.Sound('sounds/boss.ogg')
 }
+
+
+def play_sound(sound, value):
+    s = sound
+    pygame.mixer.Sound.set_volume(s, value)
+    s.play()
+
 
 con = sqlite3.connect('levels.sqlite')
 cursor = con.cursor()

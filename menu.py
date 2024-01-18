@@ -1,17 +1,19 @@
 import pygame
 import shop
 import choose_level
+from funcs import sound_data, play_sound
 
 
 class Menu:
     def __init__(self, screen):
+        self.music = True
         self.shop = shop.Shop(screen)
         self.screen = screen
         self.font = pygame.font.Font(None, 36)
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
         self.YELLOW = (235, 205, 3)
-        self.image = pygame.image.load('menu_background.png')
+        self.image = pygame.image.load('data/menu_background.png')
         self.image_rect = self.image.get_rect()
 
     def draw_button(self, color, hover_color, x, y, width, height, text, callback=None):
@@ -20,6 +22,7 @@ class Menu:
         if x <= mouse_x <= x + width and y <= mouse_y <= y + height:
             pygame.draw.rect(self.screen, hover_color, (x, y, width, height))
             if clicked and callback:
+                play_sound(sound_data['button'], 0.5)
                 callback()
         else:
             pygame.draw.rect(self.screen, color, (x, y, width, height))
@@ -42,8 +45,6 @@ class Menu:
                     self.running = False
 
             pygame.display.flip()
-
-        pygame.quit()
 
     def exit(self):
         self.running = False
