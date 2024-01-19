@@ -967,17 +967,14 @@ class Shop:
         self.read_statistics()
 
     def read_statistics(self):
-        with open('money X stats') as statistic:
-            statistic = statistic.readlines()
-            self.money = int(statistic[0].split()[1])
-            self.power = int(statistic[1].split()[1])
-            self.defense = int(statistic[2].split()[1])
+        self.money, self.power, self.defense = download_stats()
 
     def return_to_menu(self):
         self.running = False
 
     def draw(self):
-        self.draw_text(f'деньги: {self.money} сила: {self.power} защита: {self.defense}', 200, 900)
+        money, power, defense = download_stats()
+        self.draw_text(f'деньги: {money} сила: {power} защита: {defense}', 200, 900)
 
         power_button_x, power_button_y = 220, 700
         shield_button_x, shield_button_y = 1220, 700
